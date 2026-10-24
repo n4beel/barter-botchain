@@ -61,3 +61,39 @@
 ## 3. Handover Status
 
 Barter is fully implemented, thoroughly tested, verified against all architectural constraints, and ready for deployment.
+
+## Feedback round 1
+
+All 4 items from `docs/specs/FEEDBACK-barter.md` have been fixed and verified.
+
+### Item Status
+
+1. **Header collision:** **FIXED.** Redesigned header layout in `components/layout/PageShell.tsx`. Below `lg` (360px–1023px, including 700px), header renders a two-row responsive layout: Row 1 carries the Wordmark on the left and ConnectButton on the right; Row 2 carries the NetworkBadge on the left and navigation links ("Propose Swap", "My Swaps") on the right. On desktop (`>= lg`), single-row layout centers the Wordmark directly above the vertical hinge (`absolute left-1/2 -translate-x-1/2`) with ample clearance. Verified zero bounding box overlap between wordmark and nav at 360px, 700px, and 1280px via automated Puppeteer checks, and saved screenshots to `/tmp/barter-360px.png`, `/tmp/barter-700px.png`, and `/tmp/barter-1280px.png`.
+2. **Local stack does not point app at seeded chain:** **FIXED.** Updated `scripts/local-stack.mjs` to write `NEXT_PUBLIC_BOTCHAIN_NETWORK=testnet` and `NEXT_PUBLIC_BOHR_RPC=http://127.0.0.1:8712` into `.env.local`.
+3. **Seeded chain time is not wall-clock time:** **FIXED.** Total warp is 4000s (for scenario 6 expiration). Updated `scripts/local-stack.mjs` to start anvil with `--timestamp (realNow - 4000)`, warping only forward so final chain timestamp matches wall clock time exactly (measured diff: 0s, asserted diff <= 120s). Formatted Account Role Table printed in terminal matching spec §5.
+4. **Browser walkthrough required before hand-over:** **FIXED.** Automated browser walkthrough executed with headless Chrome and `docs/specs/tools/mock-wallet.js` against the local stack on port 8712 and dev server on port 3012. Verified all routes, viewports, and roles with zero console errors and zero hydration warnings.
+
+### Browser Walkthrough Results
+
+| Route | Role | Viewport / Action | Observation | Status |
+|---|---|---|---|---|
+| `/` | Visitor | 360px, 700px, 1280px | Wordmark and nav items fully visible at all 3 viewports with zero overlap; screenshots saved | PASS |
+| `/inbox` | Acc 0 & Public Lookup | 1280px / Read | Categorized inbox sections ("Waiting for you", "Waiting on them", "Done") rendered correctly; public address lookup verified | PASS |
+| `/s/1` | Acc 0 (Counterparty) | 1280px / Write | Mirrored panels displayed viewer perspective; Accepted 100 AAA for 0.5 BOT; confirmed on-chain | PASS |
+| `/s/2` | Acc 0 (Proposer) | 1280px / Write | Proposer cancelled open swap #2; escrowed 1.0 BOT refunded; cancelled confirmation displayed | PASS |
+| `/s/6` | Acc 3 (Proposer on Expired) | 1280px / Write | Expired banner verified; Proposer cancelled expired swap #6 to retrieve 0.2 BOT escrow | PASS |
+| `/s/3` | Acc 4 (Third Party) | 1280px / Read | Settled swap #3 rendered read-only with completed amounts and tx hash links | PASS |
+| `/` | Acc 0 (Proposer) | 1280px / Write | Proposed 0.1 BOT for 5 AAA to Acc 1; atomic escrow locked; swap proposal link generated | PASS |
+
+- **Console Errors:** 0
+- **Hydration Warnings:** 0
+
+### Verification Gate Summary
+
+- `forge test`: 21 passed; 0 failed; 0 skipped; 256 fuzz runs; 128,000 invariant calls; 0 string reverts.
+- `npm run typecheck`: clean (0 errors).
+- `npm test`: 56 passed (10 test files), hook-deps passed.
+- `npm run test:integration`: 12 passed (2 test files).
+- `npm run build`: compiled successfully.
+- `python3 scripts/check-distinct.py barter`: 30 projects compared, 0 problems.
+- `git status`: clean.

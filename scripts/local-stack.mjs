@@ -15,7 +15,7 @@
  *   node scripts/local-stack.mjs
  */
 
-import { spawn } from "node:child_process";
+import { spawn, execSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import {
   createPublicClient,
@@ -41,10 +41,28 @@ const local = defineChain({
   rpcUrls: { default: { http: [RPC] } },
 });
 
-console.log(`Starting anvil on port ${PORT}...`);
+try {
+  execSync(`fuser -k ${PORT}/tcp 2>/dev/null || true`);
+} catch {}
+
+const realNow = Math.floor(Date.now() / 1000);
+const TOTAL_WARP = 4000;
+const startTimestamp = realNow - TOTAL_WARP;
+
+console.log(`Starting anvil on port ${PORT} (timestamp: ${startTimestamp})...`);
 spawn(
   "anvil",
-  ["--port", String(PORT), "--chain-id", String(CHAIN_ID), "--accounts", "10", "--silent"],
+  [
+    "--port",
+    String(PORT),
+    "--chain-id",
+    String(CHAIN_ID),
+    "--accounts",
+    "10",
+    "--timestamp",
+    String(startTimestamp),
+    "--silent",
+  ],
   {
     detached: true,
     stdio: "ignore",
@@ -256,16 +274,35 @@ const h7 = await wallets[1].writeContract({
 await pub.waitForTransactionReceipt({ hash: h7 });
 console.log("Seeded #7: Open BOT ↔ Token from Account 1 to Account 0");
 
+// Assert final chain time is within 120s of wall clock
+const finalBlock = await pub.getBlock();
+const currentWallTime = Math.floor(Date.now() / 1000);
+const diff = Math.abs(Number(finalBlock.timestamp) - currentWallTime);
+console.log(`Final chain timestamp: ${finalBlock.timestamp} (real: ${currentWallTime}, diff: ${diff}s)`);
+if (diff > 120) {
+  throw new Error(`Chain timestamp skewed by ${diff}s, expected <= 120s`);
+}
+
 // Write .env.local
 const envContent = [
+  `NEXT_PUBLIC_BOTCHAIN_NETWORK=testnet`,
+  `NEXT_PUBLIC_BOHR_RPC=${RPC}`,
   `NEXT_PUBLIC_CONTRACT_968=${barterAddress}`,
   `NEXT_PUBLIC_DEPLOY_BLOCK_968=${deployBlock}`,
   `NEXT_PUBLIC_TOKEN_A_968=${tokenA}`,
   `NEXT_PUBLIC_TOKEN_B_968=${tokenB}`,
 ].join("\n");
 writeFileSync(".env.local", envContent + "\n");
-console.log("\nUpdated .env.local:");
-console.log(envContent);
+console.log("\nWrote .env.local successfully.");
 
-console.log("\nLocal stack ready.");
-console.log(`Open http://localhost:3000 to interact with Barter.`);
+console.log("\n========================================================");
+console.log(`Barter Local Stack Running on ${RPC}`);
+console.log("========================================================");
+console.log("Account Role Table:");
+console.log("--------------------------------------------------------");
+console.log(`Acc 0: ${accounts[0].address} (Proposer of #2, #3, #4; Counterparty of #1, #5, #6, #7)`);
+console.log(`Acc 1: ${accounts[1].address} (Proposer of #1, #7; Counterparty of #2, #3)`);
+console.log(`Acc 2: ${accounts[2].address} (Proposer of #5; Counterparty of #4)`);
+console.log(`Acc 3: ${accounts[3].address} (Proposer of expired #6)`);
+console.log("--------------------------------------------------------");
+console.log("Local stack ready!");
