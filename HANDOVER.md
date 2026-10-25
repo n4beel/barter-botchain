@@ -97,3 +97,18 @@ All 4 items from `docs/specs/FEEDBACK-barter.md` have been fixed and verified.
 - `npm run build`: compiled successfully.
 - `python3 scripts/check-distinct.py barter`: 30 projects compared, 0 problems.
 - `git status`: clean.
+
+## Feedback round 2
+
+- **Item 1 (Local-stack autonomous mining):** Added `"--block-time", "1"` to Anvil startup args in `scripts/local-stack.mjs`. Seeding continues to complete cleanly with the final timestamp difference within ~2 minutes of real time (`diff: 1s`).
+  - Command run to confirm blocks advance on their own:
+    ```bash
+    b1=$(cast block-number --rpc-url http://127.0.0.1:8712); sleep 3; b2=$(cast block-number --rpc-url http://127.0.0.1:8712); echo "$b1 -> $b2"
+    ```
+    Output: `129 -> 132` (+3 blocks produced automatically in 3 seconds).
+- **Item 3 (Housekeeping):**
+  - Removed tracked `AGENTS.md` and 0-byte `public/favicon.ico` via `git rm`.
+  - Added `AGENTS.md` to `.gitignore`.
+  - Added dedicated 192x192 PNG `app/icon.png` in project brand styling (`#4FD1A1`).
+  - Configured `icons: { icon: "/icon.png" }` in `metadata` in `app/layout.tsx` so browsers request `/icon.png` directly and never request `/favicon.ico`.
+
