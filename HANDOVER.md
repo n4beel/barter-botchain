@@ -112,3 +112,19 @@ All 4 items from `docs/specs/FEEDBACK-barter.md` have been fixed and verified.
   - Added dedicated 192x192 PNG `app/icon.png` in project brand styling (`#4FD1A1`).
   - Configured `icons: { icon: "/icon.png" }` in `metadata` in `app/layout.tsx` so browsers request `/icon.png` directly and never request `/favicon.ico`.
 
+## Feedback round 3
+
+- **Footer Three-Link Compliance & Helper:**
+  - Added fixed constants `BOTCHAIN_SITE_URL = "https://botchain.ai"` and `BOTCHAIN_EXPLORER_URL = "https://scan.botchain.ai"` in `lib/botchain/chain.ts`.
+  - Added exported `footerLinks(chainId?: number): FooterLinks` returning `{ contract, site, explorer }` where `contract` is `<explorer for that chain>/address/<address>` (or `null` when undeployed).
+  - Updated `BuiltOnBotChain` to use `footerLinks(activeBotChain.id).contract`.
+  - Corrected Barter's mirror colophon footer in `components/layout/PageShell.tsx` to include `BuiltOnBotChain`, `botchain.ai`, and `Explorer` in Barter's warm palette.
+  - Added `app/not-found.tsx` wrapped in `PageShell` ensuring footer renders on 404 and unrouted states.
+  - Added unit test suite in `lib/botchain/__tests__/chain.test.ts` covering chain IDs 677 and 968 for both deployed and undeployed configurations.
+
+- **Browser-Check with Local Stack (port 8712 / 3012):**
+  - `/` (Home): Verified all three links present (`https://scan.bohr.life/address/0x5FbDB2315678afecb367f032d93F642f64180aa3`, `https://botchain.ai`, `https://scan.botchain.ai`).
+  - `/s/1` (Detail): Verified all three links present.
+  - `/nonexistent` (Not Found): Verified all three links present.
+
+

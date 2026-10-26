@@ -6,6 +6,7 @@ import ConnectButton from "@/components/ui/ConnectButton";
 import NetworkBadge from "@/components/botchain/NetworkBadge";
 import BuiltOnBotChain from "@/components/botchain/BuiltOnBotChain";
 import { app } from "@/lib/app-config";
+import { footerLinks } from "@/lib/botchain/chain";
 
 export type NavItem = { href: string; label: string };
 
@@ -35,6 +36,7 @@ export default function PageShell({
   description,
 }: PageShellProps) {
   const pathname = usePathname();
+  const { site, explorer } = footerLinks();
 
   return (
     <div className="mirror-canvas min-h-[100dvh] flex flex-col justify-between text-[#F3E9CF]">
@@ -181,7 +183,27 @@ export default function PageShell({
             <span>Two assets move together or neither moves at all.</span>
             <span className="w-1.5 h-1.5 rounded-full bg-[#4FD1A1]" />
           </div>
-          <BuiltOnBotChain />
+          <div className="flex flex-wrap items-center justify-center gap-3 text-[12px]">
+            <BuiltOnBotChain className="hover:underline" />
+            <span className="text-[#3A2F12]" aria-hidden="true">•</span>
+            <a
+              href={site}
+              target="_blank"
+              rel="noreferrer"
+              className="hover:underline hover:text-[#F3E9CF]"
+            >
+              botchain.ai
+            </a>
+            <span className="text-[#3A2F12]" aria-hidden="true">•</span>
+            <a
+              href={explorer}
+              target="_blank"
+              rel="noreferrer"
+              className="hover:underline hover:text-[#F3E9CF]"
+            >
+              Explorer
+            </a>
+          </div>
         </div>
       </footer>
     </div>
