@@ -127,4 +127,15 @@ All 4 items from `docs/specs/FEEDBACK-barter.md` have been fixed and verified.
   - `/s/1` (Detail): Verified all three links present.
   - `/nonexistent` (Not Found): Verified all three links present.
 
+## Feedback round 4
+
+- **Item 1 (Shared CSS Tokens & Contrast):**
+  - Defined missing tokens in `app/globals.css`:
+    - `--success: #4FD1A1` (7.8:1 contrast on `--bg-elevated: #2E240D`, WCAG AAA)
+    - `--warning: #E0B341` (7.2:1 contrast on `--bg-elevated`, WCAG AAA)
+  - Updated `ConnectButton.tsx` menu items with readable typography, defined surfaces, and hover state (`hover:bg-[rgba(243,233,207,0.08)]`).
+  - Added unit test `test/lint/tokens.test.ts`.
+  - Verified `python3 scripts/check-tokens.py barter` exits 0 with zero undefined tokens.
+
+
 

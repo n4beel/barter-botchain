@@ -49,6 +49,9 @@
 
   --danger: #E05D52;
   --danger-ink: #1F0806;
+
+  --success: #4FD1A1;
+  --warning: #E0B341;
 }
 
 @layer base {
